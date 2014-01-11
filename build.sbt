@@ -4,19 +4,15 @@ organization := "de.knutwalker"
 
 organizationName := "knutwalker"
 
-organizationHomepage := Some(new URL("https://blog.knutwalker.de/"))
+organizationHomepage := Some(url("https://blog.knutwalker.de/"))
 
 version := "0.1.0"
 
 description := "Scala wrapper library for the v2 Forecast API provided by The Dark Sky Company, LLC"
 
-homepage := Some(new URL("http://blog.knutwalker.de/forecast-io-scala/"))
+homepage := Some(url("http://blog.knutwalker.de/forecast-io-scala/"))
 
 startYear := Some(2014)
-
-licenses += "The MIT License (MIT)" -> new URL("https://raw.github.com/knutwalker/forecast-io-scala/master/LICENSE")
-
-scmInfo := Some(ScmInfo(new URL("https://github.com/knutwalker/forecast-io-wrapper"), "scm:git:https://github.com/knutwalker/forecast-io-scala.git", Some("scm:git:ssh://git@github.com:knutwalker/forecast-io-scala.git")))
 
 scalaVersion := "2.10.3"
 
@@ -38,11 +34,33 @@ scalacOptions ++= Seq(
   "-encoding", "UTF-8"
 )
 
+// publish artifact
+
+licenses += "The MIT License (MIT)" -> url("https://raw.github.com/knutwalker/forecast-io-scala/master/LICENSE")
+
+scmInfo := Some(ScmInfo(url("https://github.com/knutwalker/forecast-io-wrapper"), "scm:git:https://github.com/knutwalker/forecast-io-scala.git", Some("scm:git:ssh://git@github.com:knutwalker/forecast-io-scala.git")))
+
 pomExtra :=
   <developers>
     <developer>
       <id>knutwalker</id>
       <name>Paul Horn</name>
-      <url>http://bkog.knutwalker.de/</url>
+      <url>http://blog.knutwalker.de/</url>
     </developer>
   </developers>
+
+publishMavenStyle := true
+
+publishTo := {
+  val nexus = "https://oss.sonatype.org/"
+  if (isSnapshot.value)
+    Some("snapshots" at nexus + "content/repositories/snaphots")
+  else
+    Some("releases" at nexus + "service/local/staging/deploy/maven2")
+}
+
+publishArtifact in Test := false
+
+pomIncludeRepository := { _ => false }
+
+
