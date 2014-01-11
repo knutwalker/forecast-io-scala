@@ -1,7 +1,7 @@
 forecast-io-scala
 =================
 
-http://blog.knutwalker.de/forecast-io-wrapper/
+http://blog.knutwalker.de/forecast-io-scala/
 
 Scala wrapper library for the v2 Forecast API provided by The Dark Sky Company, LLC.
 
@@ -142,4 +142,4 @@ java -jar -Dforecast.apikey="your-api-key-here" target/scala-2.10/forecast-io-sc
 
 ### Scaladoc
 
-Scaladoc is available at http://blog.knutwalker.de/forecast-io-wrapper/current/
+Scaladoc is available at http://blog.knutwalker.de/forecast-io-scala/current/
