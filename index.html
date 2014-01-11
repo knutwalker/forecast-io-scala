@@ -1,0 +1,199 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Forecast-io-scala by knutwalker</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Forecast-io-scala</h1>
+        <p>Scala wrapper library for the v2 Forecast API provided by The Dark Sky Company, LLC. Based on https://github.com/MartinSeeler/forecast-io-wrapper</p>
+
+        <p class="view"><a href="https://github.com/knutwalker/forecast-io-scala">View the Project on GitHub <small>knutwalker/forecast-io-scala</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/knutwalker/forecast-io-scala/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/knutwalker/forecast-io-scala/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/knutwalker/forecast-io-scala">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>
+<a name="forecast-io-scala" class="anchor" href="#forecast-io-scala"><span class="octicon octicon-link"></span></a>forecast-io-scala</h1>
+
+<p><a href="http://blog.knutwalker.de/forecast-io-wrapper/">http://blog.knutwalker.de/forecast-io-wrapper/</a></p>
+
+<p>Scala wrapper library for the v2 Forecast API provided by The Dark Sky Company, LLC.</p>
+
+<blockquote>
+<p>Based on <a href="https://github.com/MartinSeeler/forecast-io-wrapper">https://github.com/MartinSeeler/forecast-io-wrapper</a></p>
+</blockquote>
+
+<p>The Scala wrapper runs on top of <a href="http://akka.io">Akka</a>.</p>
+
+<h2>
+<a name="about" class="anchor" href="#about"><span class="octicon octicon-link"></span></a>About</h2>
+
+<p>The Forecast API lets you query for most locations on the globe, and returns:</p>
+
+<ul>
+<li>Current conditions</li>
+<li>Minute-by-minute forecasts out to 1 hour (where available)</li>
+<li>Hour-by-hour forecasts out to 48 hours</li>
+<li>Day-by-day forecasts out to 7 days</li>
+</ul><h2>
+<a name="usage" class="anchor" href="#usage"><span class="octicon octicon-link"></span></a>Usage</h2>
+
+<h3>
+<a name="samples" class="anchor" href="#samples"><span class="octicon octicon-link"></span></a>Samples</h3>
+
+<p>A simple request for the current temperature:</p>
+
+<div class="highlight highlight-scala"><pre><span class="c1">// specify your API key</span>
+<span class="k">val</span> <span class="n">apiKey</span> <span class="k">=</span> <span class="s">"replace-with-your-key"</span>
+<span class="k">val</span> <span class="n">forecastIO</span> <span class="k">=</span> <span class="nc">ForecastIO</span><span class="o">(</span><span class="n">apiKey</span><span class="o">)</span>
+
+<span class="c1">// coordinates for Dresden, Germany</span>
+<span class="k">val</span> <span class="n">latitude</span> <span class="k">=</span> <span class="mf">51.0504</span>
+<span class="k">val</span> <span class="n">longitude</span> <span class="k">=</span> <span class="mf">13.7373</span>
+
+<span class="c1">// For asynchronous execution</span>
+<span class="k">import</span> <span class="nn">ForecastIO.executionContext</span>
+
+<span class="c1">// retrieve the current forecast</span>
+<span class="k">val</span> <span class="n">forecast</span> <span class="k">=</span> <span class="n">forecastIO</span><span class="o">(</span><span class="n">latitude</span><span class="o">,</span> <span class="n">longitude</span><span class="o">)</span>
+
+<span class="c1">// deal with the result when it is available</span>
+<span class="n">forecast</span><span class="o">.</span><span class="n">foreach</span> <span class="o">{</span> <span class="n">result</span> <span class="k">=&gt;</span>
+  <span class="n">println</span><span class="o">(</span><span class="n">s</span><span class="s">"Current temperature is ${result.currently.map(_.temperature)}"</span><span class="o">)</span>
+  <span class="n">println</span><span class="o">(</span><span class="n">s</span><span class="s">"Apparent temperature is ${result.currently.map(_.apparentTemperature)"</span><span class="o">)</span>
+<span class="o">}</span>
+</pre></div>
+
+<p><code>ForecastIo.apply</code> simply returns a <code>Future[Forecast]</code>.
+<code>Forecast</code> and other nested POJOs are all case classes, so you can pattern match all the way through:</p>
+
+<div class="highlight highlight-scala"><pre><span class="c1">// specify your API key</span>
+<span class="k">val</span> <span class="n">apiKey</span> <span class="k">=</span> <span class="s">"replace-with-your-key"</span>
+<span class="k">val</span> <span class="n">forecastIO</span> <span class="k">=</span> <span class="nc">ForecastIO</span><span class="o">(</span><span class="n">apiKey</span><span class="o">)</span>
+
+<span class="c1">// coordinates for Dresden, Germany</span>
+<span class="k">val</span> <span class="n">latitude</span> <span class="k">=</span> <span class="mf">51.0504</span>
+<span class="k">val</span> <span class="n">longitude</span> <span class="k">=</span> <span class="mf">13.7373</span>
+
+<span class="c1">// For asynchronous execution</span>
+<span class="k">import</span> <span class="nn">ForecastIO.executionContext</span>
+
+<span class="c1">// retrieve the current forecast</span>
+<span class="k">val</span> <span class="n">forecast</span> <span class="k">=</span> <span class="n">forecastIO</span><span class="o">(</span><span class="n">latitude</span><span class="o">,</span> <span class="n">longitude</span><span class="o">)</span>
+
+<span class="c1">// deal with the result when it is available</span>
+<span class="n">forecast</span> <span class="n">onComplete</span> <span class="o">{</span>
+
+  <span class="k">case</span> <span class="nc">Success</span><span class="o">(</span><span class="nc">Forecast</span><span class="o">(</span><span class="k">_</span><span class="o">,</span> <span class="k">_</span><span class="o">,</span> <span class="n">timezone</span><span class="o">,</span> <span class="k">_</span><span class="o">,</span> <span class="nc">Some</span><span class="o">(</span><span class="nc">HourlyDataPoint</span><span class="o">(</span><span class="k">_</span><span class="o">,</span> <span class="k">_</span><span class="o">,</span> <span class="n">temperature</span><span class="o">,</span> <span class="k">_</span><span class="o">,</span> <span class="k">_</span><span class="o">,</span> <span class="k">_</span><span class="o">,</span> <span class="k">_</span><span class="o">,</span> <span class="k">_</span><span class="o">)),</span> <span class="k">_</span><span class="o">,</span> <span class="k">_</span><span class="o">,</span> <span class="nc">Some</span><span class="o">(</span><span class="nc">DailyDataBlock</span><span class="o">(</span><span class="k">_</span><span class="o">,</span> <span class="k">_</span><span class="o">,</span> <span class="nc">Vector</span><span class="o">(</span><span class="nc">DailyDataPoint</span><span class="o">(</span><span class="k">_</span><span class="o">,</span> <span class="n">sunset</span><span class="o">),</span> <span class="k">_</span><span class="o">*)))))</span> <span class="k">=&gt;</span>
+
+    <span class="n">println</span><span class="o">(</span><span class="n">s</span><span class="s">"It is $temperature degrees in $timezone and the sun sets at $sunset"</span><span class="o">)</span>
+<span class="o">}</span>
+</pre></div>
+
+<h3>
+<a name="java-api" class="anchor" href="#java-api"><span class="octicon octicon-link"></span></a>Java API</h3>
+
+<p><code>forecast-io-scala</code> also tries to provide a proper Java API, similar to <a href="https://github.com/MartinSeeler/forecast-io-wrapper"><code>forecast-io-wrapper</code></a>s.</p>
+
+<div class="highlight highlight-java"><pre><span class="c1">// specify your API key</span>
+<span class="kd">final</span> <span class="n">String</span> <span class="n">apiKey</span> <span class="o">=</span> <span class="s">"replace-with-your-key"</span><span class="o">;</span>
+<span class="kd">final</span> <span class="n">ForecastIO</span> <span class="n">forecastIO</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ForecastIO</span><span class="o">(</span><span class="n">apiKey</span><span class="o">);</span>
+
+<span class="c1">// coordinates for Dresden, Germany</span>
+<span class="kd">final</span> <span class="kt">double</span> <span class="n">latitude</span> <span class="o">=</span> <span class="mf">51.0504d</span><span class="o">;</span>
+<span class="kd">final</span> <span class="kt">double</span> <span class="n">longitude</span> <span class="o">=</span> <span class="mf">13.7373d</span><span class="o">;</span>
+
+<span class="c1">// retrieve the current forecast</span>
+<span class="kd">final</span> <span class="n">Forecast</span> <span class="n">forecast</span> <span class="o">=</span> <span class="n">forecastIO</span><span class="o">.</span><span class="na">getForecast</span><span class="o">(</span><span class="n">latitude</span><span class="o">,</span> <span class="n">longitude</span><span class="o">);</span>
+
+<span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"Current temperature is "</span> <span class="o">+</span> <span class="n">forecast</span><span class="o">.</span><span class="na">getCurrently</span><span class="o">().</span><span class="na">getTemperature</span><span class="o">());</span>
+<span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"Apparent temperature is "</span> <span class="o">+</span> <span class="n">forecast</span><span class="o">.</span><span class="na">getCurrently</span><span class="o">().</span><span class="na">getApparentTemperature</span><span class="o">());</span>
+</pre></div>
+
+<p>That is teh traditional blocking API. In addition to that, <code>forecast-io-scala</code> also provides an asynchronous API for Java</p>
+
+<div class="highlight highlight-java"><pre><span class="c1">// specify your API key</span>
+<span class="kd">final</span> <span class="n">String</span> <span class="n">apiKey</span> <span class="o">=</span> <span class="s">"replace-with-your-key"</span><span class="o">;</span>
+<span class="kd">final</span> <span class="n">ForecastIO</span> <span class="n">forecastIO</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ForecastIO</span><span class="o">(</span><span class="n">apiKey</span><span class="o">);</span>
+
+<span class="c1">// coordinates for Dresden, Germany</span>
+<span class="kd">final</span> <span class="kt">double</span> <span class="n">latitude</span> <span class="o">=</span> <span class="mf">51.0504d</span><span class="o">;</span>
+<span class="kd">final</span> <span class="kt">double</span> <span class="n">longitude</span> <span class="o">=</span> <span class="mf">13.7373d</span><span class="o">;</span>
+
+<span class="c1">// retrieve the current forecast</span>
+<span class="n">forecastIO</span><span class="o">.</span><span class="na">asyncForecast</span><span class="o">(</span><span class="n">latitude</span><span class="o">,</span> <span class="n">longitude</span><span class="o">,</span> <span class="k">new</span> <span class="n">Callback</span><span class="o">&lt;</span><span class="n">Forecast</span><span class="o">&gt;()</span> <span class="o">{</span>
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onSuccess</span><span class="o">(</span><span class="n">Forecast</span> <span class="n">result</span><span class="o">)</span> <span class="o">{</span>
+
+        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"Current temperature is "</span> <span class="o">+</span> <span class="n">result</span><span class="o">.</span><span class="na">getCurrently</span><span class="o">().</span><span class="na">getTemperature</span><span class="o">());</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"Apparent temperature is "</span> <span class="o">+</span> <span class="n">result</span><span class="o">.</span><span class="na">getCurrently</span><span class="o">().</span><span class="na">getApparentTemperature</span><span class="o">());</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onFailure</span><span class="o">(</span><span class="n">Throwable</span> <span class="n">t</span><span class="o">)</span> <span class="o">{}</span>
+<span class="o">});</span>
+</pre></div>
+
+<h3>
+<a name="shutdown" class="anchor" href="#shutdown"><span class="octicon octicon-link"></span></a>Shutdown</h3>
+
+<p><code>forecast-io-scala</code> runs on top of <a href="http://akka.io">Akka</a> and thus, needs to be shutdown properly.
+You can do so beu calling either the static or the instance method <code>shutdown()</code> on <code>ForecastIO</code></p>
+
+<p>If omit the shutdown, your JVM will not terminate and you have to kill it abruptly.</p>
+
+<h2>
+<a name="development" class="anchor" href="#development"><span class="octicon octicon-link"></span></a>Development</h2>
+
+<p>You'll only need <a href="http://www.scala-sbt.org/">sbt</a> and a JDK 7.
+Scala, Akka, Spray and other dependencies are downloaded during the build process.</p>
+
+<h3>
+<a name="fatjar" class="anchor" href="#fatjar"><span class="octicon octicon-link"></span></a>Fatjar</h3>
+
+<p><code>forecast-io-scala</code> features a fatjar, that prints some simple information about some place.
+You can build the jar with <code>sbt assembly</code> and use it like so:</p>
+
+<div class="highlight highlight-bash"><pre>java -jar -Dforecast.apikey<span class="o">=</span><span class="s2">"your-api-key-here"</span> target/scala-2.10/forecast-io-scala-0.1.0.jar 13.37 42
+</pre></div>
+
+<h3>
+<a name="scaladoc" class="anchor" href="#scaladoc"><span class="octicon octicon-link"></span></a>Scaladoc</h3>
+
+<p>Scaladoc is available at <a href="http://blog.knutwalker.de/forecast-io-wrapper/current/">http://blog.knutwalker.de/forecast-io-wrapper/current/</a></p>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/knutwalker">knutwalker</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+              <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-45861502-3");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
+  </body>
+</html>
