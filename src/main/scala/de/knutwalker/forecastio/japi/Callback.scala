@@ -1,5 +1,3 @@
-package de.knutwalker.forecastio.japi
-
 /*
  * Copyright (c) 2014 Paul Horn
  *
@@ -21,6 +19,9 @@ package de.knutwalker.forecastio.japi
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
+package de.knutwalker.forecastio.japi
+
 
 /** ''Java API''
   *
