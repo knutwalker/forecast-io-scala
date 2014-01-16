@@ -22,16 +22,13 @@
 
 package de.knutwalker.forecastio
 
-import akka.actor.ActorSystem
-import akka.io.IO
-import akka.pattern.ask
-import scala.concurrent._
-import scala.concurrent.duration._
-import scala.util.{Try, Failure, Success}
-import spray.can.Http
-import spray.util._
+import com.typesafe.config.ConfigFactory
 import de.knutwalker.forecastio.japi.Callback
-import akka.event.Logging
+import org.jboss.netty.handler.codec.http.HttpHeaders
+import scala.concurrent.{Await, Future, duration}
+import scala.util.{Try, Failure, Success}
+
+
 
 /** Create a new API wrapper.
   *
@@ -62,7 +59,7 @@ import akka.event.Logging
 class ForecastIO(apiKey: String) {
 
   import ForecastIO._
-  // the ExecutionService for the Futures from the Java-API
+  import duration._
 
   /** Performs an API request asynchronously.
     *
@@ -72,6 +69,9 @@ class ForecastIO(apiKey: String) {
     */
   def apply(lat: Double, long: Double): Future[Forecast] =
     request(apiKey, lat, long)
+
+  def apply(lat: Double, long: Double, cb: PartialFunction[Try[Forecast], Unit]): Unit =
+    request(apiKey, lat, long, cb)
 
   /** ''Java API''
     *
@@ -85,7 +85,7 @@ class ForecastIO(apiKey: String) {
     */
   @throws(classOf[Exception])
   def getForecast(lat: Double, long: Double): Forecast =
-    request(apiKey, lat, long) await (1 minute)
+    Await.result(request(apiKey, lat, long), 1 minute)
 
   /** ''Java API''
     *
@@ -96,47 +96,42 @@ class ForecastIO(apiKey: String) {
     * @param cb    an [[de.knutwalker.forecastio.japi.Callback]], executed at API resolution
     */
   def asyncForecast(lat: Double, long: Double, cb: Callback[Forecast]): Unit =
-    apply(lat, long) onComplete {
+    apply(lat, long, {
       case Success(forecast) => cb.onSuccess(forecast)
-      case Failure(t)        =>
-        log.error(t, "API call unsuccessful")
-        cb.onFailure(t)
-    }
-
-  /** Shuts down the underlying `ActorSystem` */
-  def shutdown(): Unit = ForecastIO.shutdown()
-
+      case Failure(t)        => cb.onFailure(t)
+    })
 }
 
 object ForecastIO {
 
-  import spray.client.pipelining._
-  import spray.http._
-  import spray.httpx.SprayJsonSupport._
+  import _root_.dispatch.{Future => _, _}
+  import Defaults._
 
-  implicit private val system = ActorSystem("forecastio")
-  implicit val executionContext = system.dispatcher
+  import de.knutwalker.forecastio.dispatch.as
+
+  val conf = ConfigFactory.load()
 
   /** base domain for API requests */
-  private val BASE_DOMAIN = Uri("https://api.forecast.io/forecast")
+  private val BASE_DOMAIN = url("https://api.forecast.io/forecast")
+
+  /** GZip enables HttpClient */
+  private val client = Http.configure(_.setCompressionEnabled(true))
 
   /** constructs URL for an actual request */
-  private def url(apiKey: String, lat: Double, long: Double) =
-    BASE_DOMAIN.withPath(BASE_DOMAIN.path / apiKey / s"$lat,$long").withQuery("units" -> "si")
-
-  /** read returned JSON into a Forecast POJO */
-  private val pipeline: HttpRequest => Future[Forecast] = sendReceive ~> unmarshal[Forecast]
+  private def svc(apiKey: String, lat: Double, long: Double) =
+    (BASE_DOMAIN / apiKey / s"$lat,$long")
+      .addHeader(HttpHeaders.Names.ACCEPT_ENCODING, "gzip, deflate")
+      .addQueryParameter("units", "si")
 
   /** executes the request asynchronously on spray-client */
-  private def request(apiKey: String, lat: Double, long: Double): Future[Forecast] = pipeline {
-    Get(url(apiKey, lat, long))
-  }
+  private def request(apiKey: String, lat: Double, long: Double): Future[Forecast] =
+    client(svc(apiKey, lat, long) OK as.Json[Forecast]())
 
-  private def providedKey = system.settings.config.getString("forecast.apikey")
+  private def request(apiKey: String, lat: Double, long: Double, cb: PartialFunction[Try[Forecast], Unit]): Unit =
+    request(apiKey, lat, long).onComplete(cb)
 
+  private def providedKey = conf.getString("forecast.apikey")
 
-  /** The logging instance */
-  val log = Logging(system, getClass)
 
   /** Factory method for creating new [[de.knutwalker.forecastio.ForecastIO]] instances
     *
@@ -165,11 +160,4 @@ object ForecastIO {
     * Read the API key from the config setting `forecast.apikey`
     */
   def create(): ForecastIO = apply(providedKey)
-
-
-  /** Shuts down the actor system and closes all pending connections. */
-  def shutdown(): Unit = {
-    IO(Http).ask(Http.CloseAll)(1 second).await
-    system.shutdown()
-  }
 }

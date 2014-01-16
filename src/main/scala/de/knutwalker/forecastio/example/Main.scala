@@ -33,14 +33,14 @@ import scala.util.{Failure, Try, Success}
 
 object Main extends App {
 
-  import ForecastIO.executionContext
+  import scala.concurrent.ExecutionContext.Implicits.global
 
   val isoFormat = new SimpleDateFormat("HH:mm:ss")
 
   val lat  = Try(args(0)).flatMap(s => Try(s.toDouble)).toOption.getOrElse(51.05)
   val long = Try(args(1)).flatMap(s => Try(s.toDouble)).toOption.getOrElse(13.37)
 
-  val forecast   = ForecastIO()(lat, long)
+  val forecast = ForecastIO()(lat, long)
 
   forecast onComplete {
     case Success(Forecast(latitude, longitude, timezone, _, Some(HourlyDataPoint(summary, _, temp, apparent, _, humidity, wind, _)), _, _, Some(DailyDataBlock(_, _, Vector(DailyDataPoint(sunrise, sunset), _*))))) =>
@@ -60,13 +60,9 @@ object Main extends App {
         """.stripMargin
       )
 
-      ForecastIO.shutdown()
-
     case Failure(t) =>
       println(t.getMessage)
-      ForecastIO.shutdown()
-
-    case otherwise => ForecastIO.shutdown()
   }
 
+  scala.concurrent.Await.result(forecast, scala.concurrent.duration.Duration.Inf)
 }

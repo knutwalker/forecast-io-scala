@@ -22,41 +22,35 @@
 
 package de.knutwalker.forecastio.example
 
-import scala.util.{Failure, Success}
+import de.knutwalker.forecastio.ForecastIO
 import java.text.SimpleDateFormat
 import java.util.{Date, TimeZone}
 
-import de.knutwalker.forecastio.ForecastIO
-
 
 object ScalaExample extends App {
-  import ForecastIO.executionContext
+
+  import scala.concurrent.ExecutionContext.Implicits.global
 
   val forecastIO = ForecastIO("your-api-key-here")
   val forecast   = forecastIO(51.05, 13.37)
 
-  forecast onComplete {
-    case Success(result) =>
+  forecast onSuccess { case result =>
 
-      println(s"Current temperature is ${result.currently.map(_.temperature).getOrElse("???")}")
-      println(s"Apparent temperature is ${result.currently.map(_.apparentTemperature).getOrElse("???")}")
+    println(s"Current temperature is ${result.currently.map(_.temperature).getOrElse("???")}")
+    println(s"Apparent temperature is ${result.currently.map(_.apparentTemperature).getOrElse("???")}")
 
-      val isoFormat = new SimpleDateFormat("HH:mm:ss")
-      isoFormat.setTimeZone(TimeZone.getTimeZone(result.timezone))
+    val isoFormat = new SimpleDateFormat("HH:mm:ss")
+    isoFormat.setTimeZone(TimeZone.getTimeZone(result.timezone))
 
-      result.daily.flatMap(_.data.headOption) foreach { today =>
+    result.daily.flatMap(_.data.headOption) foreach { today =>
 
-        val sunriseDate = new Date(today.getSunriseTime * 1000L)
-        val sunsetDate = new Date(today.getSunsetTime * 1000L)
+      val sunriseDate = new Date(today.getSunriseTime * 1000L)
+      val sunsetDate = new Date(today.getSunsetTime * 1000L)
 
-        println(s"Sunrise today was at ${isoFormat.format(sunriseDate)}")
-        println(s"Sunrise today will be at ${isoFormat.format(sunsetDate)}")
-      }
-
-      ForecastIO.shutdown()
-
-    case Failure(t) =>
-      ForecastIO.shutdown()
-
+      println(s"Sunrise today was at ${isoFormat.format(sunriseDate)}")
+      println(s"Sunrise today will be at ${isoFormat.format(sunsetDate)}")
+    }
   }
+
+  scala.concurrent.Await.result(forecast, scala.concurrent.duration.Duration.Inf)
 }

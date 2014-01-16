@@ -70,16 +70,28 @@ case class MinutelyDataBlock(@BeanProperty summary: String,
 
 
 object DataProtocol {
-  import spray.json._
-  import DefaultJsonProtocol._
+//  import spray.json._
+//  import DefaultJsonProtocol._
 
-  implicit lazy val dailyDataPointFormat = jsonFormat2(DailyDataPoint)
-  implicit lazy val dailyDataBlockFormat = jsonFormat3(DailyDataBlock)
+//  implicit lazy val dailyDataPointFormat = jsonFormat2(DailyDataPoint)
+//  implicit lazy val dailyDataBlockFormat = jsonFormat3(DailyDataBlock)
+//
+//  implicit lazy val hourlyDataPointFormat = jsonFormat8(HourlyDataPoint)
+//  implicit lazy val hourlyDataBlockFormat = jsonFormat3(HourlyDataBlock)
+//
+//  implicit lazy val minutelyDataPointFormat = jsonFormat5(MinutelyDataPoint)
+//  implicit lazy val minutelyDataBlockFormat = jsonFormat3(MinutelyDataBlock)
 
-  implicit lazy val hourlyDataPointFormat = jsonFormat8(HourlyDataPoint)
-  implicit lazy val houlryDataBlockFormat = jsonFormat3(HourlyDataBlock)
 
-  implicit lazy val minutelyDataPointFormat = jsonFormat5(MinutelyDataPoint)
-  implicit lazy val minutelyDataBlockFormat = jsonFormat3(MinutelyDataBlock)
+  import play.api.libs.json.Json
+
+  implicit lazy val dailyDataPointReads = Json.reads[DailyDataPoint]
+  implicit lazy val dailyDataBlockReads = Json.reads[DailyDataBlock]
+
+  implicit lazy val hourlyDataPointReads = Json.reads[HourlyDataPoint]
+  implicit lazy val hourlyDataBlockReads = Json.reads[HourlyDataBlock]
+
+  implicit lazy val minutelyDataPointReads = Json.reads[MinutelyDataPoint]
+  implicit lazy val minutelyDataBlockReads = Json.reads[MinutelyDataBlock]
 }
 

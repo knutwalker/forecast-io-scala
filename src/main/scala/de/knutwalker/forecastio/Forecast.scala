@@ -25,6 +25,7 @@ package de.knutwalker.forecastio
 import de.knutwalker.forecastio.data._
 import scala.beans.BeanProperty
 
+
 case class Forecast(@BeanProperty latitude: Double,
                     @BeanProperty longitude: Double,
                     @BeanProperty timezone: String,
@@ -56,9 +57,13 @@ case class Forecast(@BeanProperty latitude: Double,
 }
 
 case object Forecast {
-  import spray.json._
+//  import spray.json._
   import DataProtocol._
-  import DefaultJsonProtocol._
+//  import DefaultJsonProtocol._
 
-  implicit lazy val forecastFormat = jsonFormat8(Forecast.apply)
+  import play.api.libs.json.Json
+
+//  implicit lazy val forecastFormat = jsonFormat8(Forecast.apply)
+
+  implicit lazy val forecastReads = Json.reads[Forecast]
 }

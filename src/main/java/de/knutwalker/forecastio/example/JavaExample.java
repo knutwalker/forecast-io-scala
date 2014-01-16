@@ -30,6 +30,7 @@ import de.knutwalker.forecastio.japi.Callback;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
+import java.util.concurrent.CountDownLatch;
 
 public class JavaExample {
 
@@ -37,10 +38,6 @@ public class JavaExample {
 
     public JavaExample() {
         forecastIO = ForecastIO.create("your-api-key-here");
-    }
-
-    public void shutdown() {
-        forecastIO.shutdown();
     }
 
     public void temperature() throws Exception {
@@ -94,14 +91,18 @@ public class JavaExample {
 
         final JavaExample example = new JavaExample();
 
+        final CountDownLatch latch = new CountDownLatch(1);
+
         example.temperature();
         example.timezone();
 
         example.async(new Runnable() {
             @Override
             public void run() {
-                example.shutdown();
+                latch.countDown();
             }
         });
+
+        latch.await();
     }
 }
